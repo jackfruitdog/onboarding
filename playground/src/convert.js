@@ -41,15 +41,18 @@ export function convert(type, value, from, to) {
 
   switch (type) {
     case "temperature":
-      return temperature.convertTemperature(
+      const tempResult = temperature.convertTemperature(
         numValue,
         from || defaults.temperature.defaultFrom,
         to || defaults.temperature.defaultTo
       );
+      return Number.parseFloat(tempResult.toFixed(defaults.precision));
     case "distance":
-      return distance.convertDistance(numValue, from, to);
+      const distanceResult = distance.convertDistance(numValue, from, to);
+      return Number.parseFloat(distanceResult.toFixed(defaults.precision));
     case "weight":
-      return weight.convertWeight(numValue, from, to);
+      const weightResult = weight.convertWeight(numValue, from, to);
+      return Number.parseFloat(weightResult.toFixed(defaults.precision));
     default:
       throw new Error("Unknown type " + type);
   }
