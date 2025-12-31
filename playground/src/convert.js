@@ -18,6 +18,16 @@ const VALID_UNITS = {
   weight: ["g", "oz", "lb"]
 };
 
+// Helper function to determine conversion type from a unit
+function getTypeFromUnit(unit) {
+  for (const [type, units] of Object.entries(VALID_UNITS)) {
+    if (units.includes(unit)) {
+      return type;
+    }
+  }
+  return null;
+}
+
 export function convert(type, value, from, to) {
   // Validate that value is a valid number
   const numValue = Number(value);
@@ -56,4 +66,57 @@ export function convert(type, value, from, to) {
     default:
       throw new Error("Unknown type " + type);
   }
+}
+
+export function compare(value1, unit1, value2, unit2) {
+  // Validate inputs
+  const numValue1 = Number(value1);
+  const numValue2 = Number(value2);
+  
+  if (isNaN(numValue1) || typeof value1 === "boolean") {
+    throw new Error("Invalid numeric value provided for first value");
+  }
+  if (isNaN(numValue2) || typeof value2 === "boolean") {
+    throw new Error("Invalid numeric value provided for second value");
+  }
+
+  // Determine conversion type from units
+  const type1 = getTypeFromUnit(unit1);
+  const type2 = getTypeFromUnit(unit2);
+
+  if (!type1) {
+    throw new Error(`Unknown unit: ${unit1}`);
+  }
+  if (!type2) {
+    throw new Error(`Unknown unit: ${unit2}`);
+  }
+  if (type1 !== type2) {
+    throw new Error(`Cannot compare ${unit1} (${type1}) with ${unit2} (${type2})`);
+  }
+
+  // Convert both values to the second unit for comparison
+  const converted1 = convert(type1, numValue1, unit1, unit2);
+  const converted2 = numValue2; // Already in unit2
+
+  // Calculate difference
+  const difference = Math.abs(converted1 - converted2);
+  const differenceFormatted = Number.parseFloat(difference.toFixed(defaults.precision));
+
+  // Determine which is larger
+  let comparison;
+  if (converted1 > converted2) {
+    comparison = "greater";
+  } else if (converted1 < converted2) {
+    comparison = "less";
+  } else {
+    comparison = "equal";
+  }
+
+  return {
+    value1: converted1,
+    value2: converted2,
+    unit: unit2,
+    difference: differenceFormatted,
+    comparison
+  };
 }
